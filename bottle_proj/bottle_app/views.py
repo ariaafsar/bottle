@@ -22,8 +22,6 @@ class SendBottle(generics.CreateAPIView):
             if not bottle.valid():
                 Response({'you dont have chosen bottle'} , status=status.http_400_bad_request)
             bottle = bottle_list[0]
-            if not bottle.valid():
-                Response()
 
 class BottleShopList(generics.listAPIView):
     queryset = ShopBottle.objects.all()
@@ -39,13 +37,10 @@ class BuyBottle(generics.CreateAPIView):
         bought_bottle = self.request.data.get('bought_bottle')
         if not bought_bottle:
             raise serializers.ValidationError({'error': 'bought_bottle is required'})
-
         sender = self.request.user.account
         bottle_instance = ShopBottle.objects.get(id=bought_bottle)
-        
         if sender.score < bottle_instance.price:
             raise serializers.ValidationError({'message': 'You don’t have enough score to buy this bottle'})
-
         sender.score -= bottle_instance.price
         sender.save()
         serializers.save(sender=self.request.user.account , bought_bottle=bottle_instance)
